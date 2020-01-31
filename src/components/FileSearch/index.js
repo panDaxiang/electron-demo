@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import './style.scss'
 
-import searchFileImg from '@/assets/images/search-file.png'
+import searchFileImg from '@/assets/images/search.png'
 import closeImg from '@/assets/images/close.png'
 
 import useKeyPressed from '@/hooks/useKeyPressed'

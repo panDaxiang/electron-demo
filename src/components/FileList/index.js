@@ -4,8 +4,8 @@ import PropTypes from 'prop-types'
 import './style.scss'
 
 import markdownImg from '@/assets/images/markdown.png'
-import editImg from '@/assets/images/edit file.png'
-import deleteImg from '@/assets/images/delete file.png'
+import editImg from '@/assets/images/edit.png'
+import deleteImg from '@/assets/images/delete.png'
 import closeImg from '@/assets/images/close.png'
 
 import useKeyPressed from '@/hooks/useKeyPressed'
