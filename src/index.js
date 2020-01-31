@@ -23,6 +23,7 @@ const App = () => {
   const [activeId, setActiveId] = useState(null)
   const [unSavedIds, setUnSavedIds] = useState([])
 
+  // 点击文件,会打开在tab栏中
   const onFileClick = file => {
     setActiveId(file.id)
     if (!openedIds.includes(file.id)) {
@@ -30,10 +31,12 @@ const App = () => {
     }
   }
 
+  // 点击tab 改变active状态
   const onTabClick = id => {
     setActiveId(id)
   }
 
+  // 关闭tab
   const onTabClose = id => {
     const newOpenedIds = openedIds.filter(item => item !== id)
     if (newOpenedIds.length > 0) {
@@ -42,6 +45,7 @@ const App = () => {
     setOpenedIds(newOpenedIds)
   }
 
+  // 当前文档内容改变回调
   const handleChange = value => {
     if (!unSavedIds.includes(activeId)) {
       setUnSavedIds([...unSavedIds, activeId])
@@ -54,16 +58,19 @@ const App = () => {
     })
   }
 
+  // 删除文件
   const onFileDelete = id => {
     const newFiles = files.filter(item => item.id !== id)
     setFiles(newFiles)
     onTabClose(id)
   }
 
+  // 更新文件
   const onFileUpdate = (id, title) => {
     const newFiles = files.map(item => {
       item.isNew = false
       if (item.id === id) {
+        // 更新文件名称
         item.title = title
       }
       return item
@@ -71,6 +78,7 @@ const App = () => {
     setFiles(newFiles)
   }
 
+  // 新建文件
   const onCreateFile = () => {
     setFiles([
       ...files,
@@ -84,6 +92,7 @@ const App = () => {
     ])
   }
 
+  // 搜索文件
   const onFileSearch = value => {
     const newFiles = files.filter(item => item.title.includes(value.trim()))
     setSearchFiles(newFiles)

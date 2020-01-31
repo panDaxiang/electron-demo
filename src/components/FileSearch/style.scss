@@ -6,6 +6,12 @@
   box-sizing: border-box;
   padding: 3px 10px;
   background-color: rgba(246, 248, 248, 0.966);
+  .title{
+    opacity: .9;
+    font-weight: bold;
+    font-size: 22px;
+    text-shadow:2px 2px 2px #ccc;
+  }
   .search-btn {
     width: padding;
     margin-right: -10px;

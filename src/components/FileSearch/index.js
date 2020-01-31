@@ -41,7 +41,7 @@ const FileSearch = ({ title, onFileSearch, exit }) => {
     <div className="search-file-wrap">
       {!inputActive ? (
         <>
-          <span>{title}</span>
+          <span className="title">{title}</span>
           <button className="btn none search-btn" onClick={() => setInputActive(true)}>
             <img className="search-img" src={searchFileImg} alt="search" />
           </button>
