@@ -1,0 +1,55 @@
+.tablist-wrap {
+  height: 42px;
+  width: 100%;
+  overflow-x: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background-color: rgb(235, 237, 240);
+  font-size: 14px;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  .list-item {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    box-sizing: border-box;
+    border-right: 1px solid #bbb;
+    padding: 0 10px;
+    cursor: pointer;
+    &:hover {
+      background-color: #ccc;
+      .icon {
+        visibility: visible;
+      }
+    }
+
+    .unsave {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background-color: rgb(43, 133, 216);
+      margin-left: 5px;
+    }
+
+    &.active {
+      background-color: #ccc;
+      .icon {
+        visibility: visible;
+      }
+    }
+    .content {
+      display: inline-block;
+      max-width: 100px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .icon {
+      margin-left: 5px;
+      width: 20px;
+      visibility: hidden;
+    }
+  }
+}

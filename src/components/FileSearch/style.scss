@@ -1,0 +1,18 @@
+.search-file-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 42px;
+  box-sizing: border-box;
+  padding: 3px 10px;
+  background-color: rgba(246, 248, 248, 0.966);
+  .search-btn {
+    width: padding;
+    margin-right: -10px;
+    background-color: transparent;
+    .search-img {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

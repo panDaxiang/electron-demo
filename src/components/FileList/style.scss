@@ -1,0 +1,67 @@
+.filelist-wrap {
+  height: calc(100vh - 82px);
+  width: 100%;
+  background-color: #eee;
+  overflow-y: auto;
+  font-size: 14px;
+  position: relative;
+  .item {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-sizing: border-box;
+    padding: 0 10px 0;
+    border-bottom: 1px solid rgba(246, 248, 248, 0.966);
+    cursor: pointer;
+    &:hover {
+      background-color: #ccc;
+    }
+    .item-left {
+      display: flex;
+      align-items: center;
+      .markdown {
+        width: 20px;
+        margin-right: 10px;
+      }
+      .content {
+        flex: 1;
+        max-width: 160px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+    .item-right {
+      min-width: 60px;
+      .edit-btn {
+        margin-right: -10px;
+      }
+      img {
+        width: 20px;
+      }
+    }
+
+    .active-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      input {
+        flex: 1;
+      }
+      img {
+        width: 20px;
+      }
+    }
+  }
+  .nofile {
+    white-space: nowrap;
+    position: absolute;
+    left: 50%;
+    top: 28%;
+    transform: translateX(-50%);
+    color: #bbb;
+    font-size: 15px;
+  }
+}

@@ -1,0 +1,31 @@
+.root {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  aside {
+    flex: 1;
+    height: 100vh;
+    .bottom-btn-wrap {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+  section {
+    position: relative;
+    width: 0;
+    flex: 3;
+    .CodeMirror {
+      height: calc(100vh - 120px) !important;
+    }
+    .no-opendefiles {
+      position: absolute;
+      left: 50%;
+      top: 30%;
+      transform: translateX(-50%);
+      color: #bbb;
+      font-size: 18px;
+    }
+  }
+}
