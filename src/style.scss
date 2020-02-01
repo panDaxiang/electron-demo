@@ -16,6 +16,17 @@
     position: relative;
     width: 0;
     flex: 3;
+    .save{
+      position: fixed;
+      right: 0;
+      top: 52px;
+      cursor: pointer;
+      z-index: 100000;
+      img{
+        width: 18px;
+        height: 18px;
+      }
+    }
     .CodeMirror {
       height: calc(100vh - 120px) !important;
     }

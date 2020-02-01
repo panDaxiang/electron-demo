@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import SimpleMDE from 'react-simplemde-editor'
 import 'easymde/dist/easymde.min.css'
@@ -15,6 +15,18 @@ import TabList from '@/components/TabList'
 import BottomBtn from '@/components/BottomBtn'
 import newFileImg from '@/assets/images/New file.png'
 import importImg from '@/assets/images/import-file.png'
+import saveImg from '@/assets/images/save.png'
+
+import fileHelper from '@/utils/fileHelper'
+// import { arrayToObj } from '@/utils/helper'
+
+const { remote } = window.require('electron')
+const path = window.require('path')
+
+// 暂时文件存储在桌面
+const saveLocation = remote.app.getPath('desktop')
+
+const join = filename => path.join(saveLocation, 'md', `${filename}.md`)
 
 const App = () => {
   const [files, setFiles] = useState([])
@@ -22,6 +34,9 @@ const App = () => {
   const [openedIds, setOpenedIds] = useState([])
   const [activeId, setActiveId] = useState(null)
   const [unSavedIds, setUnSavedIds] = useState([])
+  let timer = useRef(null)
+
+  // const filesObj = arrayToObj(files, 'id')
 
   // 点击文件,会打开在tab栏中
   const onFileClick = file => {
@@ -47,15 +62,19 @@ const App = () => {
 
   // 当前文档内容改变回调
   const handleChange = value => {
-    if (!unSavedIds.includes(activeId)) {
-      setUnSavedIds([...unSavedIds, activeId])
-    }
-    files.map(item => {
-      if (item.id === activeId) {
-        item.body = value
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      if (!unSavedIds.includes(activeId)) {
+        setUnSavedIds([...unSavedIds, activeId])
       }
-      return item
-    })
+      files.map(item => {
+        if (item.id === activeId) {
+          item.body = value
+        }
+        return item
+      })
+      setFiles(files)
+    }, 1000)
   }
 
   // 删除文件
@@ -66,16 +85,33 @@ const App = () => {
   }
 
   // 更新文件
-  const onFileUpdate = (id, title) => {
+  const onFileUpdate = async (id, title) => {
+    // eslint-disable-next-line
+    let isNew = false,
+      file = null
     const newFiles = files.map(item => {
-      item.isNew = false
       if (item.id === id) {
+        file = { ...item }
+        if (item.isNew) {
+          isNew = true
+        }
         // 更新文件名称
         item.title = title
       }
+      item.isNew = false
       return item
     })
-    setFiles(newFiles)
+
+    try {
+      if (isNew) {
+        await fileHelper.writeFile(join(title), file.body)
+      } else {
+        await fileHelper.rename(join(file.title), join(title))
+      }
+      setFiles(newFiles)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   // 新建文件
@@ -96,6 +132,18 @@ const App = () => {
   const onFileSearch = value => {
     const newFiles = files.filter(item => item.title.includes(value.trim()))
     setSearchFiles(newFiles)
+  }
+
+  // 保存文件
+  const saveFile = async () => {
+    try {
+      const file = files.find(item => item.id === activeId)
+      await fileHelper.writeFile(join(file.title), file.body)
+      const newUnSavedIds = unSavedIds.filter(item => item !== activeId)
+      setUnSavedIds(newUnSavedIds)
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   const activeFile = files.find(file => file.id === activeId)
@@ -138,6 +186,12 @@ const App = () => {
               onTabClick={id => onTabClick(id)}
               onTabClose={id => onTabClose(id)}
             />
+            {unSavedIds.length ? (
+              <button onClick={saveFile} className="save btn none">
+                <img src={saveImg} alt="保存" />
+              </button>
+            ) : null}
+
             <SimpleMDE
               key={activeFile && activeFile.body}
               onChange={value => handleChange(value)}
