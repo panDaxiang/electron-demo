@@ -8,8 +8,8 @@ const useKeyPressed = targetKeyCode => {
       setKeyPressed(true)
     }
   }
-  const keyUpHandler = ({ keyCode }) => {
-    if (keyCode === targetKeyCode) setKeyPressed(false)
+  const keyUpHandler = () => {
+    setKeyPressed(false)
   }
 
   useEffect(() => {

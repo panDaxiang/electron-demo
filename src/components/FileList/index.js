@@ -11,15 +11,17 @@ import closeImg from '@/assets/images/close.png'
 import useKeyPressed from '@/hooks/useKeyPressed'
 
 const FileList = ({ files, onFileDelete, onFileSave, onFileClick }) => {
-  const [status, setStatus] = useState(false)
+  const [status, setStatus] = useState(null)
   const [value, setValue] = useState('')
+  const [isRename, setRename] = useState(false)
   const inputNode = useRef(null)
-  const enterPressed = useKeyPressed(13)
-  const escPressed = useKeyPressed(27)
+  let enterPressed = useKeyPressed(13)
+  let escPressed = useKeyPressed(27)
 
   const closeUpdateInput = editorItem => {
     setValue('')
     setStatus(null)
+    setRename(false)
     if (editorItem.isNew) {
       onFileDelete(editorItem.id)
     }
@@ -30,14 +32,34 @@ const FileList = ({ files, onFileDelete, onFileSave, onFileClick }) => {
     setStatus(item.id)
   }
 
+  const inputChange = event => {
+    setValue(event.target.value)
+    const result = files
+      .filter(file => file.id !== status)
+      .find(file => file.title === event.target.value)
+    if (result) {
+      setRename(true)
+    } else {
+      setRename(false)
+    }
+  }
+
   useEffect(() => {
-    const file = files.find(item => item.id === status)
-    if (status && enterPressed) {
-      if (!inputNode.current.value || !inputNode.current.value.trim()) return
-      onFileSave(status, inputNode.current.value)
-      setStatus(false)
-    } else if (status && escPressed) {
-      closeUpdateInput(file)
+    if (status) {
+      const file = files.find(item => item.id === status)
+      if (enterPressed) {
+        if (isRename) {
+          return
+        }
+        const {
+          current: { value: inputValue },
+        } = inputNode
+        if (!inputValue || !inputValue.trim()) return
+        onFileSave(status, inputValue)
+        setStatus(null)
+      } else if (escPressed) {
+        closeUpdateInput(file)
+      }
     }
   })
 
@@ -73,11 +95,17 @@ const FileList = ({ files, onFileDelete, onFileSave, onFileClick }) => {
                 <input
                   className="input small"
                   value={value}
-                  onChange={e => setValue(e.target.value)}
+                  onChange={e => inputChange(e)}
                   placeholder="请输入文件名称"
                   ref={inputNode}
                   maxLength="30"
                 />
+                <span
+                  className="repeat-title-msg"
+                  style={{ display: `${status && isRename ? 'block' : 'none'}` }}
+                >
+                  文件已存在
+                </span>
                 <button className="btn none search-btn" onClick={() => closeUpdateInput(item)}>
                   <img className="search-img" src={closeImg} alt="close" />
                 </button>

@@ -22,6 +22,27 @@ import fileHelper from '@/utils/fileHelper'
 
 const { remote } = window.require('electron')
 const path = window.require('path')
+const Store = window.require('electron-store')
+
+const store = new Store({
+  name: 'Markdown Files Data',
+})
+
+const saveFileToStore = files => {
+  const newFiles = []
+  files &&
+    files.forEach(file => {
+      newFiles.push({
+        id: file.id,
+        title: file.title || '',
+        path: file.path || '',
+        createdAt: file.createdAt || '',
+      })
+    })
+
+  store.set('files', newFiles || [])
+  return newFiles
+}
 
 // 暂时文件存储在桌面
 const saveLocation = remote.app.getPath('desktop')
@@ -29,19 +50,28 @@ const saveLocation = remote.app.getPath('desktop')
 const join = filename => path.join(saveLocation, 'md', `${filename}.md`)
 
 const App = () => {
-  const [files, setFiles] = useState([])
+  const [files, setFiles] = useState(store.get('files') || [])
   const [searchFiles, setSearchFiles] = useState([])
   const [openedIds, setOpenedIds] = useState([])
   const [activeId, setActiveId] = useState(null)
   const [unSavedIds, setUnSavedIds] = useState([])
   let timer = useRef(null)
 
-  // const filesObj = arrayToObj(files, 'id')
-
   // 点击文件,会打开在tab栏中
   const onFileClick = file => {
     setActiveId(file.id)
     if (!openedIds.includes(file.id)) {
+      file.isLoaded ||
+        fileHelper.readFile(file.path).then(value => {
+          const newFiles = files.map(item => {
+            if (item.id === file.id) {
+              item.body = value
+              item.isLoaded = true
+            }
+            return item
+          })
+          setFiles(newFiles)
+        })
       setOpenedIds([...openedIds, file.id])
     }
   }
@@ -77,15 +107,36 @@ const App = () => {
     }, 1000)
   }
 
-  // 删除文件
-  const onFileDelete = id => {
-    const newFiles = files.filter(item => item.id !== id)
+  const deleteUnsaveFile = id => {
+    alert('文件不存在')
+    const newFiles = files.filter(file => file.id !== id)
     setFiles(newFiles)
-    onTabClose(id)
+    saveFileToStore(newFiles)
+  }
+
+  // 删除文件
+  const onFileDelete = async id => {
+    let deletepath = ''
+    const newFiles = files.filter(item => {
+      if (item.id !== id) {
+        return true
+      }
+      deletepath = item.path
+      return false
+    })
+    try {
+      deletepath && (await fileHelper.deleteFile(deletepath))
+      setFiles(newFiles)
+      saveFileToStore(newFiles)
+      onTabClose(id)
+    } catch (err) {
+      deleteUnsaveFile(id)
+    }
   }
 
   // 更新文件
   const onFileUpdate = async (id, title) => {
+    const newPath = join(title)
     // eslint-disable-next-line
     let isNew = false,
       file = null
@@ -97,6 +148,7 @@ const App = () => {
         }
         // 更新文件名称
         item.title = title
+        item.path = newPath
       }
       item.isNew = false
       return item
@@ -104,13 +156,14 @@ const App = () => {
 
     try {
       if (isNew) {
-        await fileHelper.writeFile(join(title), file.body)
+        await fileHelper.writeFile(newPath, file.body)
       } else {
-        await fileHelper.rename(join(file.title), join(title))
+        await fileHelper.rename(join(file.title), newPath)
       }
       setFiles(newFiles)
+      saveFileToStore(newFiles)
     } catch (err) {
-      console.log(err)
+      deleteUnsaveFile(id)
     }
   }
 
@@ -121,9 +174,9 @@ const App = () => {
       {
         id: uuidv1(),
         title: '',
-        body: '## 请输入内容',
         createdAt: new Date().getTime(),
         isNew: true,
+        body: '',
       },
     ])
   }

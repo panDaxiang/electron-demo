@@ -47,6 +47,15 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
+      position: relative;
+      .repeat-title-msg{
+        position: absolute;
+        top: 100%;
+        left: 3px;
+        z-index: 100;
+        color:red;
+        font-size:12px;
+      }
       input {
         flex: 1;
       }
