@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import ReactDOM from 'react-dom'
 import SimpleMDE from 'react-simplemde-editor'
 import 'easymde/dist/easymde.min.css'
@@ -23,6 +23,7 @@ import fileHelper from '@/utils/fileHelper'
 const { remote } = window.require('electron')
 const path = window.require('path')
 const Store = window.require('electron-store')
+const fs = window.require('fs')
 
 const store = new Store({
   name: 'Markdown Files Data',
@@ -45,9 +46,9 @@ const saveFileToStore = files => {
 }
 
 // 暂时文件存储在桌面
-const saveLocation = remote.app.getPath('desktop')
+const saveLocation = `${remote.app.getPath('desktop')}/markdown_files`
 
-const join = filename => path.join(saveLocation, 'md', `${filename}.md`)
+const join = filename => path.join(saveLocation, `${filename}.md`)
 
 const App = () => {
   const [files, setFiles] = useState(store.get('files') || [])
@@ -57,23 +58,55 @@ const App = () => {
   const [unSavedIds, setUnSavedIds] = useState([])
   let timer = useRef(null)
 
+  useEffect(() => {
+    const watchFiles = async () => {
+      try {
+        await fileHelper.readdir(saveLocation)
+        fs.watch(saveLocation, (event, filename) => {
+          fileHelper.readdir(saveLocation).then(res => {
+            if (!res.includes(filename) && filename) {
+              console.log('file_change', event)
+            }
+          })
+        })
+      } catch (err) {
+        console.log(err)
+        fs.mkdir(saveLocation, { recursive: true }, errMsg => console.log(errMsg))
+      }
+    }
+
+    watchFiles()
+  }, [])
+
+  const deleteUnsaveFile = id => {
+    alert('文件不存在')
+    const newFiles = files.filter(file => file.id !== id)
+    setFiles(newFiles)
+    saveFileToStore(newFiles)
+  }
+
   // 点击文件,会打开在tab栏中
   const onFileClick = file => {
     setActiveId(file.id)
-    if (!openedIds.includes(file.id)) {
-      file.isLoaded ||
-        fileHelper.readFile(file.path).then(value => {
+
+    file.isLoaded ||
+      fileHelper
+        .readFile(file.path)
+        .then(value => {
           const newFiles = files.map(item => {
             if (item.id === file.id) {
               item.body = value
-              item.isLoaded = true
             }
             return item
           })
           setFiles(newFiles)
+          setOpenedIds([...openedIds, file.id])
         })
-      setOpenedIds([...openedIds, file.id])
-    }
+        .catch(() => {
+          deleteUnsaveFile(file.id)
+          const ids = openedIds.filter(id => id !== file.id)
+          setOpenedIds(ids)
+        })
   }
 
   // 点击tab 改变active状态
@@ -105,13 +138,6 @@ const App = () => {
       })
       setFiles(files)
     }, 1000)
-  }
-
-  const deleteUnsaveFile = id => {
-    alert('文件不存在')
-    const newFiles = files.filter(file => file.id !== id)
-    setFiles(newFiles)
-    saveFileToStore(newFiles)
   }
 
   // 删除文件
@@ -189,13 +215,15 @@ const App = () => {
 
   // 保存文件
   const saveFile = async () => {
+    const file = files.find(item => item.id === activeId)
     try {
-      const file = files.find(item => item.id === activeId)
       await fileHelper.writeFile(join(file.title), file.body)
       const newUnSavedIds = unSavedIds.filter(item => item !== activeId)
       setUnSavedIds(newUnSavedIds)
     } catch (err) {
-      console.log(err)
+      deleteUnsaveFile(activeId)
+      const ids = openedIds.filter(id => id !== activeId)
+      setOpenedIds(ids)
     }
   }
 

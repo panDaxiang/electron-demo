@@ -11,6 +11,8 @@ const fileHelper = {
       encoding: 'utf8',
     }),
   rename: (oldPath, newPath) => fs.rename(oldPath, newPath),
+  readdir: dirPath => fs.readdir(dirPath),
+  watch: path => fs.watch(path),
 }
 
 export default fileHelper
