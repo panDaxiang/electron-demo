@@ -79,7 +79,8 @@ const App = () => {
   }, [])
 
   const deleteUnsaveFile = id => {
-    alert('文件不存在')
+    // alert('文件不存在')
+    remote.dialog.showErrorBox('', '文件不存在')
     const newFiles = files.filter(file => file.id !== id)
     setFiles(newFiles)
     saveFileToStore(newFiles)
@@ -89,6 +90,10 @@ const App = () => {
   const onFileClick = file => {
     setActiveId(file.id)
 
+    if (file.isLoaded) {
+      setOpenedIds([...openedIds, file.id])
+    }
+
     file.isLoaded ||
       fileHelper
         .readFile(file.path)
@@ -96,6 +101,7 @@ const App = () => {
           const newFiles = files.map(item => {
             if (item.id === file.id) {
               item.body = value
+              item.isLoaded = true
             }
             return item
           })
@@ -162,7 +168,8 @@ const App = () => {
 
   // 更新文件
   const onFileUpdate = async (id, title) => {
-    const newPath = join(title)
+    let newPath = ''
+    let oldPath = ''
     // eslint-disable-next-line
     let isNew = false,
       file = null
@@ -172,7 +179,8 @@ const App = () => {
         if (item.isNew) {
           isNew = true
         }
-        // 更新文件名称
+        oldPath = isNew ? join(title) : item.path
+        newPath = path.join(path.dirname(oldPath), `${title}${path.extname(oldPath)}`)
         item.title = title
         item.path = newPath
       }
@@ -182,13 +190,14 @@ const App = () => {
 
     try {
       if (isNew) {
-        await fileHelper.writeFile(newPath, file.body)
+        await fileHelper.writeFile(oldPath, file.body)
       } else {
-        await fileHelper.rename(join(file.title), newPath)
+        await fileHelper.rename(oldPath, newPath)
       }
       setFiles(newFiles)
       saveFileToStore(newFiles)
     } catch (err) {
+      console.log(err)
       deleteUnsaveFile(id)
     }
   }
@@ -217,13 +226,48 @@ const App = () => {
   const saveFile = async () => {
     const file = files.find(item => item.id === activeId)
     try {
-      await fileHelper.writeFile(join(file.title), file.body)
+      await fileHelper.writeFile(file.path, file.body)
       const newUnSavedIds = unSavedIds.filter(item => item !== activeId)
       setUnSavedIds(newUnSavedIds)
     } catch (err) {
       deleteUnsaveFile(activeId)
       const ids = openedIds.filter(id => id !== activeId)
       setOpenedIds(ids)
+    }
+  }
+
+  // 导入文件
+  const onImportFiles = async () => {
+    const { filePaths = [] } = await remote.dialog.showOpenDialog({
+      title: '导入文件',
+      properties: ['openFile', 'multiSelections'],
+      filters: [{ name: 'Markdown files', extensions: ['md'] }],
+    })
+
+    if (filePaths.length > 0) {
+      const addFiles =
+        filePaths
+          .filter(curPath => {
+            const isAlready = !!files.find(
+              file => file.title === path.basename(curPath, path.extname(curPath)),
+            )
+            return !isAlready
+          })
+          .map(item => ({
+            id: uuidv1(),
+            title: path.basename(item, path.extname(item)),
+            path: item,
+            createAt: new Date().getTime(),
+          })) || []
+
+      if (addFiles.length > 0) {
+        setFiles([...files, ...addFiles])
+        saveFileToStore(files)
+        remote.dialog.showMessageBox({
+          type: 'info',
+          message: '导入文件成功',
+        })
+      }
     }
   }
 
@@ -252,7 +296,12 @@ const App = () => {
             color="rgb(43, 133, 216)"
             onClick={onCreateFile}
           />
-          <BottomBtn title="导入" icon={importImg} color="rgb(55, 189, 103)" />
+          <BottomBtn
+            title="导入"
+            icon={importImg}
+            color="rgb(55, 189, 103)"
+            onClick={onImportFiles}
+          />
         </div>
       </aside>
 
