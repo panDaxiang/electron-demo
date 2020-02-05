@@ -9,6 +9,8 @@ import deleteImg from '@/assets/images/delete.png'
 import closeImg from '@/assets/images/close.png'
 
 import useKeyPressed from '@/hooks/useKeyPressed'
+import useContextMenu from '@/hooks/useContextMenu'
+import { getParentNode } from '@/utils/helper'
 
 const FileList = ({ files, onFileDelete, onFileSave, onFileClick }) => {
   const [status, setStatus] = useState(null)
@@ -64,7 +66,7 @@ const FileList = ({ files, onFileDelete, onFileSave, onFileClick }) => {
   })
 
   useEffect(() => {
-    const newFile = files.find(file => file.id === status)
+    const newFile = files.find(file => file.isNew || file.id === status)
     const handleInputBlur = () => closeUpdateInput(newFile)
     if (status) {
       inputNode.current.focus()
@@ -85,11 +87,54 @@ const FileList = ({ files, onFileDelete, onFileSave, onFileClick }) => {
     }
   }, [files])
 
+  const currentMenuDOM = useContextMenu(
+    [
+      {
+        label: '在右侧打开',
+        click() {
+          const clickItem = getParentNode(currentMenuDOM.current, 'item')
+          if (clickItem) {
+            onFileClick(clickItem.dataset.id)
+          }
+        },
+      },
+      {
+        label: '重命名',
+        click() {
+          const clickItem = getParentNode(currentMenuDOM.current, 'item')
+          if (clickItem) {
+            onFileEdit({
+              title: clickItem.dataset.title,
+              id: clickItem.dataset.id,
+            })
+          }
+        },
+      },
+      {
+        label: '删除',
+        click() {
+          const clickItem = getParentNode(currentMenuDOM.current, 'item')
+          if (clickItem) {
+            onFileDelete(clickItem.dataset.id)
+          }
+        },
+      },
+    ],
+    '.filelist-wrap',
+    'item',
+  )
+
   return (
     <ul className="filelist-wrap">
       {files.length ? (
         files.map(item => (
-          <li className="item" key={item.id} onClick={() => onFileClick(item)}>
+          <li
+            className="item"
+            data-id={item.id}
+            data-title={item.title}
+            key={item.id}
+            onClick={() => onFileClick(item.id)}
+          >
             {item.id === status || item.isNew ? (
               <div className="active-item" onClick={event => event.stopPropagation()}>
                 <input

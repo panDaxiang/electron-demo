@@ -87,11 +87,13 @@ const App = () => {
   }
 
   // 点击文件,会打开在tab栏中
-  const onFileClick = file => {
-    setActiveId(file.id)
+  const onFileClick = id => {
+    setActiveId(id)
+
+    const file = files.find(item => item.id === id)
 
     if (file.isLoaded) {
-      setOpenedIds([...openedIds, file.id])
+      setOpenedIds([...openedIds, id])
     }
 
     file.isLoaded ||
@@ -110,7 +112,7 @@ const App = () => {
         })
         .catch(() => {
           deleteUnsaveFile(file.id)
-          const ids = openedIds.filter(id => id !== file.id)
+          const ids = openedIds.filter(item => item !== file.id)
           setOpenedIds(ids)
         })
   }
