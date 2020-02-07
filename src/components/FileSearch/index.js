@@ -7,6 +7,7 @@ import searchFileImg from '@/assets/images/search.png'
 import closeImg from '@/assets/images/close.png'
 
 import useKeyPressed from '@/hooks/useKeyPressed'
+import useIpcRender from '@/hooks/useIpcRender'
 
 const FileSearch = ({ title, onFileSearch, exit }) => {
   const [inputActive, setInputActive] = useState(false)
@@ -36,6 +37,10 @@ const FileSearch = ({ title, onFileSearch, exit }) => {
       inputNode.current.focus()
     }
   }, [inputActive])
+
+  useIpcRender({
+    'search-file': () => setInputActive(true),
+  })
 
   return (
     <div className="search-file-wrap">

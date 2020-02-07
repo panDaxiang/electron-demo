@@ -20,6 +20,8 @@ import saveImg from '@/assets/images/save.png'
 import fileHelper from '@/utils/fileHelper'
 // import { arrayToObj } from '@/utils/helper'
 
+import useIpcRender from '@/hooks/useIpcRender'
+
 const { remote } = window.require('electron')
 const path = window.require('path')
 const Store = window.require('electron-store')
@@ -206,6 +208,7 @@ const App = () => {
 
   // 新建文件
   const onCreateFile = () => {
+    console.log(111)
     setFiles([
       ...files,
       {
@@ -272,6 +275,12 @@ const App = () => {
       }
     }
   }
+
+  useIpcRender({
+    'newly-built-file': onCreateFile,
+    'save-file': saveFile,
+    'import-file': onImportFiles,
+  })
 
   const activeFile = files.find(file => file.id === activeId)
   const defaultFiles = searchFiles.length > 0 ? searchFiles : files
