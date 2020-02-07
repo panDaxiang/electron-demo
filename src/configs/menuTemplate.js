@@ -1,4 +1,4 @@
-const { app } = require('electron')
+const { app, shell, ipcMain } = require('electron')
 
 const isMac = process.platform === 'darwin'
 
@@ -11,7 +11,12 @@ const menuTemplate = [
           submenu: [
             { label: '关于', role: 'about' },
             { type: 'separator' },
-            { label: '设置', role: 'setting' },
+            {
+              label: '设置',
+              click() {
+                ipcMain.emit('open-setting-window')
+              },
+            },
             { type: 'separator' },
             { label: '服务', role: 'services' },
             { type: 'separator' },
@@ -70,6 +75,17 @@ const menuTemplate = [
       { label: '粘贴', role: 'paste', accelerator: 'CmdOrCtrl+V' },
       { label: '删除', role: 'delete', accelerator: 'CmdOrCtrl+D' },
       { type: 'separator' },
+      ...(isMac
+        ? []
+        : [
+            {
+              label: '设置',
+              click() {
+                ipcMain.emit('open-setting-window')
+              },
+            },
+            { type: 'separator' },
+          ]),
       { label: '全选', role: 'selectAll', accelerator: 'CmdOrCtrl+A' },
     ],
   },
@@ -103,9 +119,8 @@ const menuTemplate = [
     submenu: [
       {
         label: '了解更多',
-        click: async () => {
-          const { shell } = require('electron')
-          await shell.openExternal('https://electronjs.org')
+        click() {
+          shell.openExternal('https://electronjs.org')
         },
       },
     ],

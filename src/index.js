@@ -30,6 +30,7 @@ const fs = window.require('fs')
 const store = new Store({
   name: 'Markdown Files Data',
 })
+const settingStore = new Store({ name: 'Settings' })
 
 const saveFileToStore = files => {
   const newFiles = []
@@ -47,11 +48,6 @@ const saveFileToStore = files => {
   return newFiles
 }
 
-// 暂时文件存储在桌面
-const saveLocation = `${remote.app.getPath('desktop')}/markdown_files`
-
-const join = filename => path.join(saveLocation, `${filename}.md`)
-
 const App = () => {
   const [files, setFiles] = useState(store.get('files') || [])
   const [searchFiles, setSearchFiles] = useState([])
@@ -59,6 +55,10 @@ const App = () => {
   const [activeId, setActiveId] = useState(null)
   const [unSavedIds, setUnSavedIds] = useState([])
   let timer = useRef(null)
+  // 暂时文件存储在桌面
+  const saveLocation = settingStore.get('location') || store`${remote.app.getPath('documents')}`
+
+  const join = filename => path.join(saveLocation, `${filename}.md`)
 
   useEffect(() => {
     const watchFiles = async () => {

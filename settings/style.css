@@ -1,0 +1,15 @@
+.save-locaiton-wrapper{
+  display: flex;
+  align-items: center;
+}
+#save_location{
+  width: 300px;
+  height: 24px;
+  border: 1px solid #efefef;
+  font-size: 13px;
+  color: #ccc;
+  line-height: 24px;
+}
+button{
+  cursor: pointer;
+}
