@@ -56,7 +56,7 @@ const App = () => {
   const [unSavedIds, setUnSavedIds] = useState([])
   let timer = useRef(null)
   // 暂时文件存储在桌面
-  const saveLocation = settingStore.get('location') || store`${remote.app.getPath('documents')}`
+  const saveLocation = settingStore.get('location') || `${remote.app.getPath('documents')}`
 
   const join = filename => path.join(saveLocation, `${filename}.md`)
 

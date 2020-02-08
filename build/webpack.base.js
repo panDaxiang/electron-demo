@@ -46,7 +46,7 @@ module.exports = {
     filename: 'js/[name].[contenthash:5].js',
     chunkFilename: 'js/[name].chunk.[contenthash:5].js',
     path: resolve('../dist'), // 对应一个绝对路径，此路径是你希望一次性打包的目录
-    publicPath: '', // 静态文件的
+    publicPath: NODE_ENV === 'development' ? '' : './', // 静态文件的
     // library:'library', // 导出的变量名 或者 模块名
     // libraryTarget:'umd'
   },

@@ -1,12 +1,12 @@
 {
-  "name": "",
+  "name": "markdown",
   "sideEffects": [
     "*.css",
     "*.scss",
     "*.sass"
   ],
   "version": "1.0.0",
-  "description": "",
+  "description": "Markdown Editor",
   "private": true,
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,72 @@
     "build": "cross-env NODE_ENV=production webpack --config ./build/webpack.prod.js",
     "dll": "webpack --config ./build/webpack.dll.js",
     "eslint": "eslint --ext .js,.js --fix ./src",
-    "dev": "concurrently \"yarn start\" \"wait-on http://localhost:3000 && electron .\""
+    "dev": "concurrently \"cross-env NODE_ENV=development yarn start\" \"wait-on http://localhost:3000 && electron .\"",
+    "prepack": "npm run build",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "Markdown",
+    "productName": "Markdown编辑器",
+    "compression": "store",
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "settings/**/*",
+      "package.json",
+      "AppWindow.js",
+      "index.js",
+      "menuTemplate.js"
+    ],
+    "directories": {
+      "output": "./app",
+      "buildResources": "assets"
+    },
+    "extends": null,
+    "mac": {
+      "category": "public.app-cateogry.productivity",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "background": "assets/appdmg.png",
+      "icon": "assets/icon.icns",
+      "iconSize": 100,
+      "contents": [
+        {
+          "x": 380,
+          "y": 280,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 110,
+          "y": 280,
+          "type": "file"
+        }
+      ],
+      "window": {
+        "width": 500,
+        "height": 500
+      }
+    },
+    "win": {
+      "target": [
+        "msi",
+        "nsis"
+      ],
+      "icon": "./assets/icon.ico",
+      "artifactName": "${productName}-Web-Setup-${version}.${ext}",
+      "publisherName": "panxiang"
+    },
+    "nsis": {
+      "allowToChangeInstallationDirectory": true,
+      "oneClick": false,
+      "perMachine": false
+    },
+    "electronDownload": {
+      "mirror": "https://npm.taobao.org/mirrors/electron/"
+    }
   },
   "husky": {
     "hooks": {
@@ -29,7 +94,7 @@
       "git add"
     ]
   },
-  "author": "panxinag",
+  "author": "panxiang",
   "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.6.2",
@@ -50,6 +115,8 @@
     "cross-env": "^6.0.3",
     "css-loader": "^3.2.0",
     "devtron": "^1.4.0",
+    "electron": "^8.0.0",
+    "electron-builder": "^22.3.2",
     "eslint": "^6.5.1",
     "eslint-config-airbnb": "^18.0.1",
     "eslint-config-prettier": "^6.7.0",
@@ -77,27 +144,25 @@
     "url-loader": "^2.1.0",
     "wait-on": "^4.0.0",
     "webpack": "^4.41.0",
+    "webpack-bundle-analyzer": "^3.6.0",
     "webpack-cli": "^3.3.9",
     "webpack-dev-server": "^3.8.2",
     "webpack-merge": "^4.2.2",
-    "webpackbar": "^4.0.0"
-  },
-  "dependencies": {
-    "easymde": "^2.9.0",
-    "electron": "^7.1.10",
-    "electron-store": "^5.1.0",
-    "prop-types": "^15.7.2",
+    "webpackbar": "^4.0.0",
     "react": "^16.10.2",
     "react-dom": "^16.10.2",
-    "react-redux": "^7.1.3",
-    "react-simplemde-editor": "^4.1.0",
-    "redux": "^4.0.5",
-    "redux-saga": "^1.1.3",
-    "styled-components": "^4.4.0",
-    "uuid": "^3.4.0"
+    "uuid": "^3.4.0",
+    "prop-types": "^15.7.2",
+    "easymde": "^2.9.0"
+  },
+  "dependencies": {
+    "electron-is-dev": "^1.1.0",
+    "electron-store": "^5.1.0",
+    "react-simplemde-editor": "^4.1.0"
   },
   "browserslist": [
-    "> 1%",
-    "last 2 versions"
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
   ]
 }

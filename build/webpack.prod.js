@@ -4,9 +4,10 @@ const merge = require('webpack-merge')
 const OptmizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin')
 // const UglifyjsPlugin = require('uglifyjs-webpack-plugin')
 const ImageminPlguin = require('imagemin-webpack-plugin').default
-const CompressionWebpackPlugin = require('compression-webpack-plugin')
+// const CompressionWebpackPlugin = require('compression-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+// const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 const baseConfig = require('./webpack.base')
 
@@ -14,6 +15,7 @@ const prodConfig = {
   mode: 'production',
   // devtool: "cheap-module-source-map",
   plugins: [
+    // new BundleAnalyzerPlugin({ analyzerPort: 8919 }),
     // 使用HashedModuleIdsPlugin稳定moduleId
     new webpack.HashedModuleIdsPlugin({
       hashDigest: 'hex',
@@ -28,22 +30,22 @@ const prodConfig = {
         quality: '95-100',
       },
     }),
-    new CompressionWebpackPlugin({
-      filename: '[path].gz[query]',
-      algorithm: 'gzip',
-      test: /\.(js|css|html|svg)$/,
-      compressionOptions: { level: 9 },
-      threshold: 10240,
-      minRatio: 0.8,
-    }),
+    // new CompressionWebpackPlugin({
+    //   filename: '[path].gz[query]',
+    //   algorithm: 'gzip',
+    //   test: /\.(js|css|html|svg)$/,
+    //   compressionOptions: { level: 9 },
+    //   threshold: 10240,
+    //   minRatio: 0.8,
+    // }),
     new CleanWebpackPlugin(),
   ],
   optimization: {
     usedExports: true, // tree-shaking
     // moduleIds: 'hashed',
-    // runtimeChunk: {
-    //   name: 'manifest',
-    // },
+    runtimeChunk: {
+      name: 'manifest',
+    },
     minimize: true,
     minimizer: [
       // new UglifyjsPlugin({
@@ -57,12 +59,23 @@ const prodConfig = {
         test: /\.js(\?.*)?$/i,
         cache: true,
         parallel: true,
-        sourceMap: false,
+        terserOptions: {
+          // https://github.com/webpack-contrib/terser-webpack-plugin#terseroptions
+          extractComments: false,
+          compress: {
+            warnings: false,
+            drop_console: true,
+            drop_debugger: true,
+          },
+          output: {
+            comments: false,
+          },
+        },
       }),
       new OptmizeCssAssetsWebpackPlugin({
         cssProcessor: require('cssnano'),
         cssProcessorOptions: {
-          discardComments: { removeAll: true },
+          discardComments: {safe: true},
         },
       }),
     ],
@@ -71,6 +84,7 @@ const prodConfig = {
       chunks: 'all',
       // 形成一个代码块最小的体积
       minSize: 1000,
+      maxSize: 0,
       // 被分割的代码需要最少被引用的次数
       minChunks: 1,
       maxAsyncRequests: 5, // 按需加载时候最大的并行请求数
@@ -81,15 +95,16 @@ const prodConfig = {
         vender: {
           test: /[\\/]node_modules[\\/]/,
           name: 'vender',
-          priority: 10,
+          priority: 50,
         },
         common: {
           name: 'common',
-          minChunks: 2,
           priority: 30,
+          minChunks: 2
         },
       },
     },
+    noEmitOnErrors: true,
   },
 }
 
